@@ -34,6 +34,8 @@ qpopd() {
   popd &> /dev/null
 }
 
+ZIP="zip"
+
 while getopts acho opt; do
   case $opt in
     a)
@@ -75,6 +77,7 @@ for t in $TGTS; do
   name=`basename $t`
   os=`uname -s`
   if [[ -z $DOLAMBDA && ($os == MINGW* || $os == CYGWIN*) ]]; then
+    ZIP="build-lambda-zip -output"
     name=$name.exe
   fi
   echo "Building ${name}..."
@@ -84,6 +87,6 @@ for t in $TGTS; do
   fi
   go build -o build/bin/$name $t
   if [[ -n $DOLAMBDA ]]; then
-    build-lambda-zip -output $ZIP/$name.zip $BIN/$name 
+    $ZIP $ZIP/$name.zip $BIN/$name 
   fi
 done
