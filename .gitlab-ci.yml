@@ -1,0 +1,50 @@
+image: golang:1.19
+
+stages:
+  - build
+
+format:
+  stage: build
+  script:
+    - test -z "$(gofmt -l ./)"
+
+vet:
+  stage: build
+  script:
+    - go vet -json ./... | tee vet-report.json
+  artifacts:
+    when: always
+    paths:
+      - vet-report.json
+    expire_in: 1 hour
+
+test:
+  stage: build
+  script:
+    - go test -coverprofile=coverage.out -json ./... | tee test-report.json
+  artifacts:
+    when: always
+    paths:
+      - test-report.json
+      - coverage.out
+
+staticcheck:
+  stage: build
+  script:
+    - go install honnef.co/go/tools/cmd/staticcheck@latest # ideally we should version pin
+    - staticcheck ./...
+
+golint:
+  stage: build
+  script:
+    - go install golang.org/x/lint/golint@latest # ideally we should version pin
+    - golint -set_exit_status ./...
+
+build:
+  stage: build
+  script:
+    - ./bld -ac
+  artifacts:
+    paths:
+      - build/bin/*
+      - build/zip/*
