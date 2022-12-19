@@ -26,13 +26,15 @@ import (
 	"github.com/slugger/mstdnlambda/internal/cfg"
 )
 
+// LogCategory represents a known logging category type
 type LogCategory int
 
+// Supported logging categories
 const (
 	DefaultCategory LogCategory = iota
 	DevEnvCategory
 	DevEnvNotificationCategory
-	HttpCategory
+	HTTPCategory
 	LambdaCategory
 	SnsNotificationCategory
 )
@@ -45,7 +47,7 @@ func (c LogCategory) String() string {
 		return "DevEnvNotify"
 	case LambdaCategory:
 		return "lambda"
-	case HttpCategory:
+	case HTTPCategory:
 		return "http"
 	case SnsNotificationCategory:
 		return "SnsNotify"
@@ -54,12 +56,14 @@ func (c LogCategory) String() string {
 	}
 }
 
+// Log is the global log entry; preconfigured based on lambda configuration options
 var Log *log.Entry
 
 func init() {
 	Reset()
 }
 
+// Reset puts the global logger back to its original state; should be called on each invocation of the lambda
 func Reset() {
 	l := log.New()
 	l.SetFormatter(&log.JSONFormatter{})
@@ -74,21 +78,25 @@ func Reset() {
 	Log = log.NewEntry(l)
 }
 
+// GetLogForCategory returns a configured log.Entry for the given category
 func GetLogForCategory(cat LogCategory) *log.Entry {
 	return Log.WithField("category", cat.String())
 }
 
+// AddField allows adding a structured field and value to the global log entry; it does not add the field to the global entry itself but instead returns a new Entry with the field added
 func AddField(key string, val interface{}) *log.Entry {
 	Log = Log.WithField(key, val)
 	return Log
 }
 
+// AddFields allows for the adding of multiple structure fields to the global log.Entry
 func AddFields(fields log.Fields) *log.Entry {
 	Log = Log.WithFields(fields)
 	return Log
 }
 
-func LogAsJson(entry *log.Entry, lvl log.Level, subject interface{}, msg string, skipIfDebug bool) {
+// LogAsJSON is a convienence method to easily marshal the subject to a json string and log that value in the structured field named "subject"
+func LogAsJSON(entry *log.Entry, lvl log.Level, subject interface{}, msg string, skipIfDebug bool) {
 	if !entry.Logger.IsLevelEnabled(lvl) || (skipIfDebug && entry.Logger.IsLevelEnabled(log.DebugLevel)) {
 		return
 	}

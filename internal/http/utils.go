@@ -33,9 +33,9 @@ const authHeaderName = "authorization"
 const crytoKeyHeaderName = "crypto-key"
 const encryptionHeaderName = "encryption"
 
-const p256CryptoKeyId = "p256ecdsa"
-const dhCryptoKeyId = "dh"
-const saltKeyId = "salt"
+const p256CryptoKeyID = "p256ecdsa"
+const dhCryptoKeyID = "dh"
+const saltKeyID = "salt"
 
 const authTokenPrefix = "WebPush "
 
@@ -50,7 +50,7 @@ func parseSalt(event events.LambdaFunctionURLRequest) ([]byte, error) {
 		return nil, err
 	}
 
-	decode, err := b64.RawURLEncoding.DecodeString(keys[saltKeyId])
+	decode, err := b64.RawURLEncoding.DecodeString(keys[saltKeyID])
 	if err != nil {
 		err = fmt.Errorf("[salt decode failed] %w: %s", ErrNotBase64Encoded, err.Error())
 	}
@@ -68,7 +68,7 @@ func parseTheirPublicKey(event events.LambdaFunctionURLRequest) ([]byte, error) 
 		return nil, err
 	}
 
-	decode, err := b64.RawURLEncoding.DecodeString(keys[dhCryptoKeyId])
+	decode, err := b64.RawURLEncoding.DecodeString(keys[dhCryptoKeyID])
 	if err != nil {
 		err = fmt.Errorf("[their public key decode failed] %w: %s", ErrNotBase64Encoded, err.Error())
 	}
@@ -99,7 +99,7 @@ func parseP256PublicKey(event events.LambdaFunctionURLRequest) (*ecdsa.PublicKey
 		return nil, err
 	}
 
-	return b64ToPublicKey(cryptoKeys[p256CryptoKeyId])
+	return b64ToPublicKey(cryptoKeys[p256CryptoKeyID])
 }
 
 func b64ToPublicKey(input string) (*ecdsa.PublicKey, error) {

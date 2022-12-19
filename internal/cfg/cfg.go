@@ -21,6 +21,7 @@ package cfg
 
 import "github.com/caarlos0/env/v6"
 
+// Config represents all config options for the lambda
 type Config interface {
 	AwsRegion() string
 	LogLevel() string
@@ -30,16 +31,19 @@ type Config interface {
 	IsSkipPayloadDecrypt() bool
 }
 
+// Cfg is the global Config instance for the lambda
 var Cfg Config
 
 func init() {
 	Cfg = &configSettings{}
 }
 
+// NewConfig returns the default Config instance
 func NewConfig() Config {
 	return Cfg
 }
 
+// ParseConfig parses the env variables and configures the lambda
 func ParseConfig() Config {
 	cfg := configSettings{}
 	if err := env.Parse(&cfg); err != nil {

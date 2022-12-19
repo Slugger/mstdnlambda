@@ -119,23 +119,23 @@ func handleRequest(ctx context.Context, event events.LambdaFunctionURLRequest) (
 	var req *payload.EncryptedPayload
 	var err error
 
-	logging.LogAsJson(log, logrus.DebugLevel, event, "event logged", false)
+	logging.LogAsJSON(log, logrus.DebugLevel, event, "event logged", false)
 
 	if vjwt, err = http.ExtractJwt(event); err != nil {
-		logging.LogAsJson(log, logrus.ErrorLevel, event, "jwt extract failed", true)
+		logging.LogAsJSON(log, logrus.ErrorLevel, event, "jwt extract failed", true)
 		e := fmt.Errorf("[jwt extract failed] %w", err)
 		return nil, e
 	}
 
 	if req, err = http.ExtractPayload(event); err != nil {
-		logging.LogAsJson(log, logrus.ErrorLevel, event, "payload extract failed", true)
+		logging.LogAsJSON(log, logrus.ErrorLevel, event, "payload extract failed", true)
 		e := fmt.Errorf("[payload extract failed] %w", err)
 		return nil, e
 	}
 
 	if !cfg.Cfg.IsSkipJwtVerify() {
 		if err = jwt.Verify(vjwt); err != nil {
-			logging.LogAsJson(log, logrus.ErrorLevel, event, "jwt verify failed", true)
+			logging.LogAsJSON(log, logrus.ErrorLevel, event, "jwt verify failed", true)
 			e := fmt.Errorf("[jwt verify failed] %w", err)
 			return nil, e
 		}
@@ -147,7 +147,7 @@ func handleRequest(ctx context.Context, event events.LambdaFunctionURLRequest) (
 	msg, err = payload.Decrypt(req)
 	if err != nil {
 		b64Payload := base64.StdEncoding.EncodeToString(req.Data)
-		logging.LogAsJson(log.WithField("data", b64Payload), logrus.ErrorLevel, event, "payload decrypt failed", false)
+		logging.LogAsJSON(log.WithField("data", b64Payload), logrus.ErrorLevel, event, "payload decrypt failed", false)
 		e := fmt.Errorf("[payload decrypt failed] %w", err)
 		return nil, e
 	}
@@ -155,7 +155,7 @@ func handleRequest(ctx context.Context, event events.LambdaFunctionURLRequest) (
 
 	targets, err := http.ExtractTargets(event)
 	if err != nil {
-		logging.LogAsJson(log, logrus.ErrorLevel, event.RawPath, "targets extract failed", false)
+		logging.LogAsJSON(log, logrus.ErrorLevel, event.RawPath, "targets extract failed", false)
 		e := fmt.Errorf("[targets extract failed] %w", err)
 		return nil, e
 	}
@@ -166,7 +166,7 @@ func handleRequest(ctx context.Context, event events.LambdaFunctionURLRequest) (
 		n := notify.New(t)
 		if err = n.Send(msg); err != nil {
 			e := fmt.Errorf("[notification failed] %w", err)
-			logging.LogAsJson(log.WithField("err", e), logrus.ErrorLevel, n, "notification failed", false)
+			logging.LogAsJSON(log.WithField("err", e), logrus.ErrorLevel, n, "notification failed", false)
 			statusCode = 500
 			statusTxt = "fail"
 			break

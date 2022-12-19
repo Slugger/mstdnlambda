@@ -32,13 +32,25 @@ import (
 	"github.com/slugger/mstdnlambda/internal/payload"
 )
 
+// ErrInvalidHeader represents an error for a header that has an unexpected value
 var ErrInvalidHeader = errors.New("header contains invalid contents")
+
+// ErrMissingHeader represents an error for an expected/required header that was not found
 var ErrMissingHeader = errors.New("expected header not found")
+
+// ErrInvalidInput represents an error when invalid input is encountered and can't be processed
 var ErrInvalidInput = errors.New("invalid input received")
+
+// ErrCryptoFailure represents an error caused by a crypto fault while encrypting or decrypting data
 var ErrCryptoFailure = errors.New("crypto failure")
+
+// ErrNotBase64Encoded represent an error caused when input received is expected to be base64 encoded but is not
 var ErrNotBase64Encoded = errors.New("input is not base64 encoded")
+
+// ErrTargetDecode represents an error caused by a target in the request path that could not be decoded (usually not base64 encoded)
 var ErrTargetDecode = errors.New("target decode failed")
 
+// ExtractJwt Parses the given lambda event and extracts the JWT token details from the request
 func ExtractJwt(event events.LambdaFunctionURLRequest) (*jwt.VerifiableJwt, error) {
 	var token, aud string
 	var err error
@@ -61,6 +73,7 @@ func ExtractJwt(event events.LambdaFunctionURLRequest) (*jwt.VerifiableJwt, erro
 	}, nil
 }
 
+// ExtractPayload Parses the lambda event and extracts the aesgcm encrypted payload; the payload is NOT decrypted by this function
 func ExtractPayload(event events.LambdaFunctionURLRequest) (*payload.EncryptedPayload, error) {
 	if !event.IsBase64Encoded {
 		return nil, ErrNotBase64Encoded // AWS will not send raw binary streams to us
@@ -101,6 +114,7 @@ func ExtractPayload(event events.LambdaFunctionURLRequest) (*payload.EncryptedPa
 	}, nil
 }
 
+// ExtractTargets parses the given lambda event and decodes the targets from the request path
 func ExtractTargets(event events.LambdaFunctionURLRequest) ([]string, error) {
 	encodedTargets := strings.Split(event.RawPath, "/")
 	targets := make([]string, 0)
@@ -117,6 +131,7 @@ func ExtractTargets(event events.LambdaFunctionURLRequest) ([]string, error) {
 	return targets, nil
 }
 
+// EncodeResponse generates an event response using the given HTTP status code and message
 func EncodeResponse(code int, msg string) *events.LambdaFunctionURLResponse {
 	resp := map[string]string{
 		"status": msg,

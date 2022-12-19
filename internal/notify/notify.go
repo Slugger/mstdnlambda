@@ -25,10 +25,13 @@ import (
 	"github.com/slugger/mstdnlambda/internal/logging"
 )
 
+// Notifier defines the contract for receivers of incoming push notifications
 type Notifier interface {
+	// Send delivers the given message string to this Notifier; returns nil on success or non-nil in case of an error
 	Send(message string) error
 }
 
+// New returns a default implementation of Notifier
 func New(target string) Notifier {
 	if devenv.IsActive() {
 		return &devNotifier{

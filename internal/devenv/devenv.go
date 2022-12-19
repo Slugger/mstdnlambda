@@ -20,20 +20,15 @@ package devenv
 */
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
 )
 
-type ErrDevEnv error
-type errDevEnv struct{}
-
-func (e *errDevEnv) Error() string {
-	return "devenv error"
-}
-
-var devEnvError = &errDevEnv{}
+// ErrDevEnv represents a generic error in the development environment
+var ErrDevEnv = errors.New("devenv error")
 
 type envMap map[string]string
 
@@ -50,7 +45,7 @@ func (e *envMap) String() string {
 func (e *envMap) Set(val string) error {
 	pair := strings.SplitN(val, "=", 2)
 	if len(pair) != 2 {
-		return fmt.Errorf("%w: invalid env var '%s'; expected var=val", devEnvError, val)
+		return fmt.Errorf("%w: invalid env var '%s'; expected var=val", ErrDevEnv, val)
 	}
 	(*e)[pair[0]] = pair[1]
 	return nil
@@ -68,10 +63,12 @@ func init() {
 	flag.Var(&env, "env", "specify an environment variable to set for the lambda execution; multiple -env can be specified; format is var=val")
 }
 
+// IsActive returns true if executing in a dev environment or false otherwise
 func IsActive() bool {
 	return isDevEnv
 }
 
+// GetEventData reads a mock event from the configured soure file and returns it as a []byte, err is not nil in case of an error
 func GetEventData() ([]byte, error) {
 	bytes, err := os.ReadFile(eventFile)
 	if err != nil {
@@ -80,6 +77,7 @@ func GetEventData() ([]byte, error) {
 	return bytes, nil
 }
 
+// InitArgs Inject any command line args into the environment
 func InitArgs() {
 	if !IsActive() {
 		return

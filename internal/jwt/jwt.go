@@ -27,9 +27,13 @@ import (
 	jwtlib "github.com/dgrijalva/jwt-go/v4"
 )
 
+// ErrInvalidJwtSigningMethod represents an error that denotes a JWT token is not signed with a supported encryption method
 var ErrInvalidJwtSigningMethod = errors.New("unexpected signing method")
+
+// ErrJwtParseFailure represents an error denoting that a JWT token could not be parsed properly
 var ErrJwtParseFailure = errors.New("jwt parse failed")
 
+// Verify parses and verifies the given JWT token; returns an error iff the token validation failed otherwise returns nil
 func Verify(vjwt *VerifiableJwt) error {
 	if _, err := jwtlib.Parse(vjwt.Token, vjwt.publicKey, jwtlib.WithAudience(vjwt.Aud)); err != nil {
 		return fmt.Errorf("%w: %s", ErrJwtParseFailure, err.Error())
@@ -37,6 +41,7 @@ func Verify(vjwt *VerifiableJwt) error {
 	return nil
 }
 
+// A dot encoded JWT token, its expected audience and the ECDSA public key needed to verify the token
 type VerifiableJwt struct {
 	Token     string
 	PublicKey *ecdsa.PublicKey
