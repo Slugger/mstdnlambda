@@ -41,7 +41,7 @@ func Verify(vjwt *VerifiableJwt) error {
 	return nil
 }
 
-// A dot encoded JWT token, its expected audience and the ECDSA public key needed to verify the token
+// VerifiableJwt A dot encoded JWT token, its expected audience and the ECDSA public key needed to verify the token
 type VerifiableJwt struct {
 	Token     string
 	PublicKey *ecdsa.PublicKey
