@@ -43,6 +43,7 @@ golint:
 build:
   stage: build
   script:
+    - apt update && apt -y install zip
     - ./bld -ac
   artifacts:
     paths:
