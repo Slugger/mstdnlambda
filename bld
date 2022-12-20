@@ -21,9 +21,6 @@ show_help() {
 cat << EOF
   Usage: ${0##*/} [-acho]
   Build this project, producing all binaries in build/bin
-  -a Do a build for AWS Lambda
-       Binaries are built for linux/amd64 and Lambda zip files are created in
-       build/zip for each binary
   -c Clean the build directory (destroy it completely) before build starts 
   -o Clean only then exit
   -h Dispaly this help and exit; ignore all other options 
@@ -36,11 +33,8 @@ qpopd() {
 
 ZIPEXE="zip"
 
-while getopts acho opt; do
+while getopts cho opt; do
   case $opt in
-    a)
-      DOLAMBDA=1
-      ;;
     c)
       DOCLEAN=1
       ;;
@@ -69,24 +63,27 @@ ZIP="build/zip"
 TGTS=`find ./cmd -maxdepth 1 -mindepth 1 -type d -print`
 
 mkdir -p $BIN
-if [[ -n $DOLAMBDA ]]; then
-  mkdir -p $ZIP
-fi
 
+platforms=("windows/amd64" "linux/amd64" "linux/arm64")
 for t in $TGTS; do
-  name=`basename $t`
-  os=`uname -s`
-  if [[ -z $DOLAMBDA && ($os == MINGW* || $os == CYGWIN*) ]]; then
-    ZIPEXE="build-lambda-zip -output"
-    name=$name.exe
-  fi
-  echo "Building ${name}..."
-  if [[ -n $DOLAMBDA ]]; then
-    export GOOS=linux
-    export GOARCH=amd64
-  fi
-  go build -o build/bin/$name $t
-  if [[ -n $DOLAMBDA ]]; then
-    $ZIPEXE $ZIP/$name.zip $BIN/$name 
-  fi
+  for platform in "${platforms[@]}"; do
+    name=`basename $t`
+    fields=(${platform//\// })
+    export GOOS=${fields[0]}
+    export GOARCH=${fields[1]}
+    if [[ "$GOOS" == "windows" ]]; then
+      name=$name.exe
+    fi
+    os=`uname -s`
+    if [[ $os == MINGW* || $os == CYGWIN* ]]; then
+      ZIPEXE="build-lambda-zip -output"
+    fi
+
+    echo "Building ${name} for $platform..."
+    EXENAME=$BIN/$GOOS-$GOARCH/$name
+    go build -o $EXENAME $t
+    if [[ "$GOOS" == "linux" && $name == "handler" ]]; then
+      $ZIPEXE $EXENAME.zip $EXENAME
+    fi
+  done
 done
