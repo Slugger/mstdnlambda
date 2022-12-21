@@ -132,10 +132,11 @@ Everything up to the first slash is just your assigned lambda function URL. The
 https://base64encode.org/ and paste in your topic ARN, **check the 'Perform
 URL-safe encoding' box then generate the encoded value**.  This is the value
 you need to append to the URL. If you wanted to deliver the message to multiple
-SNS topics, you can append multiple encoded topic ARNS, just separate them by
+SNS topics, you can append multiple encoded topic ARNs, just separate them by
 slashes on the end of the URL. When you specify multiple topics, all must
 publish successfully otherwise an error is returned to Mastodon and it will
 retry **all** of them again.
 
-This raises a good point: your subscribers might be able to receive a notification more than once. Your handlers must be prepared for this and must
+This raises a good point: your subscribers must be able to receive a 
+notification more than once. Your handlers must be prepared for this and must
 be idempotent.
